@@ -1,9 +1,12 @@
 import React from "react";
-import {Divider, IconButton, Typography} from "@mui/material";
+import {Button, Divider, IconButton, Typography} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit.js";
 import VisibilityIcon from "@mui/icons-material/Visibility.js";
 import Navigation from "../../layouts/Navigation/index.jsx";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {DataGrid} from "@mui/x-data-grid";
+import { Stack } from "@mui/system";
 
 const Suppliers = () => {
     const rows = [
@@ -25,10 +28,10 @@ const Suppliers = () => {
                 return (
                     <>
                         <IconButton onClick={()=> console.log("OlaMundo")}>
-                            <EditIcon/>
+                            <DeleteIcon/>
                         </IconButton>
                         <IconButton onClick={()=> console.log("OlaMundo")}>
-                            <VisibilityIcon/>
+                            <EditIcon/>
                         </IconButton>
                     </>
                 );
@@ -38,8 +41,11 @@ const Suppliers = () => {
 
     return (
         <Navigation>
-            <Typography variant="h4">Fornecedores</Typography>
-            <Divider sx={{mb:2}}/>
+            <Stack direction="row">
+                <Typography variant="h4" sx={{display:"inline", mr:2}}>Fornecedores</Typography>
+                <Button variant="contained" size="small" color="success" startIcon={<AddIcon/>}>Cadastrar</Button>
+            </Stack>
+            <Divider sx={{my:2}}/>
             <DataGrid
                 rows={rows}
                 columns={columns}

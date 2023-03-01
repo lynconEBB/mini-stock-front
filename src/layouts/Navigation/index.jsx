@@ -73,7 +73,7 @@ const Navigation = ({children}) => {
                                 <ListItemText primary={"Compras"} />
                             </ListItemButton>
                         </ListItem>
-                        <ListItem key={3} disablePadding>
+                        <ListItem key={4} disablePadding>
                             <ListItemButton onClick={() => navigate("/customers")}>
                                 <ListItemIcon>
                                     <PersonIcon/>
@@ -81,7 +81,7 @@ const Navigation = ({children}) => {
                                 <ListItemText primary={"Clientes"} />
                             </ListItemButton>
                         </ListItem>
-                        <ListItem key={3} disablePadding>
+                        <ListItem key={5} disablePadding>
                             <ListItemButton onClick={() => navigate("/suppliers")}>
                                 <ListItemIcon>
                                     <ApartmentIcon/>
