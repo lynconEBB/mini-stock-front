@@ -72,6 +72,25 @@ const Suppliers = () => {
                         <Grid item xs={6}>
                             <TextField fullWidth label="CNPJ" id="cnpj" />
                         </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="h5">Endereço</Typography>
+                            <Divider/>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField fullWidth label="Rua" id="street" />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField fullWidth label="Número" id="number" />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField fullWidth label="Bairro" id="neighborhood" />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField fullWidth label="Cidade" id="city" />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField fullWidth label="Estado" id="state" />
+                        </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>

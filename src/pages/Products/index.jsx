@@ -93,7 +93,7 @@ const Products = () => {
                         </Grid>
                         <Grid item xs={4}>
                             <FormControl fullWidth>
-                                <InputLabel id="supplier">Fornecedor</InputLabel>
+                                <InputLabel id="supplier">Forma de Pagamento</InputLabel>
                                 <Select
                                     labelId="supplier"
                                     id="supplier-select"

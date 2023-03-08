@@ -175,21 +175,24 @@ const Sales = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
+                        <Grid item xs={12} mt={2}>
+                            <Typography variant="h5">Produtos</Typography>
+                            <Divider/>
+                        </Grid>
                         <Grid item xs={4}>
                             <FormControl fullWidth>
                                 <InputLabel id="payment">Produto</InputLabel>
                                 <Select
-                                    size="small"
                                     labelId="payment"
                                     id="payment-select"
                                     label="Forma de Pagamento"
                                 >
-                                    <MenuItem value={10}>Cartão</MenuItem>
-                                    <MenuItem value={20}>Dinheiro</MenuItem>
+                                    <MenuItem value={10}>Geladeira Eletrolux</MenuItem>
+                                    <MenuItem value={20}>Ovos Granja Verde</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={6} sx={{display:"flex"}}>
                             <Button color="success" variant="contained">Adicionar</Button>
                         </Grid>
                         <Grid item xs={12} sx={{mb:2}}>
