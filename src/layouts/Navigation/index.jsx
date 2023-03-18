@@ -19,9 +19,14 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import { Box } from "@mui/system";
 import React from "react";
 import {useNavigate} from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 const Navigation = ({children}) => {
-    const navigate = useNavigate()
+
+    const navigate = useNavigate();
+
+    const {signout} = useAuth();
+
     return (
         <Box sx={{ display: "flex" }}>
             <AppBar position="fixed" open={true} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -29,7 +34,7 @@ const Navigation = ({children}) => {
                     <Typography variant="h6" noWrap component="div">
                         Mini Stock
                     </Typography>
-                    <IconButton sx={{color:"white"}} onClick={() => navigate("/")}>
+                    <IconButton sx={{color:"white"}} onClick={signout}>
                         <ExitToAppIcon/>
                     </IconButton>
                 </Toolbar>
