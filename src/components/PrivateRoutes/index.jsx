@@ -2,10 +2,10 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"
 
 const PrivateRoutes = ({ roles }) => {
-    const { user } = useAuth();
+    const { isAuthenticated, getUser } = useAuth();
 
     const canAccessRoute = () => {
-        return user !== null && roles.includes(user.role);
+        return isAuthenticated() && roles.includes(getUser().role);
     }
 
     return (

@@ -1,5 +1,27 @@
-import React, { useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Divider,
+    FormControl,
+    Grid,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Typography
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit.js";
 import VisibilityIcon from "@mui/icons-material/Visibility.js";
 import Navigation from "../../layouts/Navigation/index.jsx";
@@ -8,19 +30,112 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack } from "@mui/system";
 import DataDisplay from "../../components/DataDisplay/index.jsx";
+import { useApi } from "../../services/api.js";
+import MessageContext from "../../contexts/messageContext.jsx";
+import { useForm, Controller, useFieldArray, useWatch } from "react-hook-form";
+
+const defaultValues = {
+    date: "",
+    discount: 0,
+    supplierId: "",
+    items: []
+}
+
+const calculateItemTotal = (itemValue) => {
+    if (itemValue === undefined || Number.isNaN(itemValue.amount) || Number.isNaN(itemValue.price))
+        return "R$ 0.00";
+
+    return Number((itemValue.amount * itemValue.price).toFixed(2));
+}
+
+const calculateSalePrice = (itemValue) => {
+    if (itemValue === undefined || itemValue.price === "" || Number.isNaN(itemValue.price))
+        return "R$ 0.00";
+
+    return (parseFloat(itemValue.price) + (parseFloat(itemValue.price) * 0.15)).toFixed(2);
+}
+
+const calculateTotal = (items) => {
+    let total = parseFloat(0.0);
+
+    for (const item of items) {
+        total += calculateItemTotal(item);
+    }
+    return parseFloat(total).toFixed(2);
+}
+
+const calculateLiquidTotal = (items, discount) => {
+    const total = calculateTotal(items);
+
+    if (discount === undefined || discount === "" || Number.isNaN(discount))
+        return total;
+
+    const discountValue = total * parseFloat(discount) / 100.00;
+    return (total - discountValue).toFixed(2);
+}
 
 const Purchases = () => {
+    const { authApi } = useApi();
+    const { showMessage } = useContext(MessageContext);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+    const [purchases, setPurchases] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
-    const rows = [
-        { id: 1, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-        { id: 2, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-        { id: 3, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-        { id: 4, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-        { id: 5, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-        { id: 6, date: "12/34/2003", supplier: "Granja Verde", value: "R$ 12,43", discount: "R$ 2,34", finalValue: "R$ 10,02" },
-    ];
+    const { control, reset, handleSubmit } = useForm({
+        defaultValues: {
+            items: []
+        }
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        name: "items",
+        control
+    });
+
+    const itemsValues = useWatch({
+        name: "items",
+        control
+    });
+
+    const discountValue = useWatch({
+        name: "discount",
+        control
+    })
+
+    const updatePurchases = () => {
+        authApi.get("/purchase")
+            .then(response => {
+                setPurchases(response.data);
+            })
+            .catch(error => {
+                showMessage("Nao foi possivel carregar as compras!", "error");
+            });
+    }
+
+    const updateProducts = () => {
+        authApi.get("/product")
+            .then(response => {
+                setProducts(response.data);
+            })
+            .catch(error => {
+                showMessage("Nao foi possivel carregar os produtos", "error");
+            });
+    }
+
+    useEffect(() => {
+        authApi.get("/supplier")
+            .then(response => {
+                setSuppliers(response.data);
+            })
+            .catch(error => {
+                showMessage("Nao foi possivel carregar os fornecedores", "error");
+            });
+        updateProducts();
+        updatePurchases();
+    }, []);
 
     const columns = [
         { field: 'id', headerName: "Número" },
@@ -43,15 +158,30 @@ const Purchases = () => {
         }
     ];
 
+    const onSubmit = data => {
+        console.log(data);
+        authApi.post("/purchase", data)
+            .then(response => {
+                updatePurchases();
+                setCreateDialogOpen(false);
+                reset(defaultValues);
+                showMessage("Compra cadastrado com sucesso", "success");
+            })
+            .catch(error => {
+                showMessage("Dados inválidos", "error");
+            });
+    };
+
     return (
         <Navigation>
             <Stack direction="row">
                 <Typography variant="h4" sx={{ display: "inline", mr: 2 }}>Compras</Typography>
-                <Button variant="contained" size="small" color="success" startIcon={<AddIcon />} onClick={() => setCreateDialogOpen(true)}>Cadastrar</Button>
+                <Button variant="contained" size="small" color="success" startIcon={<AddIcon />}
+                    onClick={() => setCreateDialogOpen(true)}>Cadastrar</Button>
             </Stack>
             <Divider sx={{ my: 2 }} />
             <DataGrid
-                rows={rows}
+                rows={purchases}
                 columns={columns}
                 getRowId={row => row.id}
                 autoHeight={true}
@@ -126,133 +256,206 @@ const Purchases = () => {
                     <Button onClick={() => setDetailsDialogOpen(false)}>Fechar</Button>
                 </DialogActions>
             </Dialog>
+
             <Dialog
                 open={createDialogOpen}
                 fullWidth={true}
                 maxWidth="lg"
-                onClose={() => setCreateDialogOpen(false)}
+                onClose={() => {
+                    updateProducts();
+                    reset(defaultValues);
+                    setCreateDialogOpen(false);
+                }}
                 scroll="paper"
             >
-                <DialogTitle>Cadastro de Compra</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <DialogTitle>Cadastro de Compra</DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item xs={6}>
+                                <Controller
+                                    defaultValue={""}
+                                    name="date"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            fullWidth
+                                            label="Data"
+                                        />)
+                                    }
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="supplier">Fornecedor</InputLabel>
+                                    <Controller
+                                        name="supplierId"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Select
+                                                {...field}
+                                                labelId="supplierId"
+                                                id="supplier-select"
+                                                label="Fornecedor"
+                                            >
+                                                {suppliers.map(supplier => (
+                                                    <MenuItem key={`type-${supplier.id}`}
+                                                        value={supplier.id}>
+                                                        {supplier.name}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        )}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="product">Produto</InputLabel>
+                                    <Select
+                                        labelId="payment"
+                                        id="product-select"
+                                        label="Produto"
+                                        value={selectedProduct}
+                                        onChange={e => setSelectedProduct(e.target.value)}
+                                        defaultValue={{}}
+                                    >
+                                        {products.map(product => (
+                                            <MenuItem key={`type-${product.id}`}
+                                                value={product}>
+                                                {product.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={6} sx={{ display: "flex" }}>
+                                <Button
+                                    color="success"
+                                    variant="contained"
+                                    onClick={() => {
+                                        if (selectedProduct !== null) {
+                                            setProducts(old => {
+                                                return old.filter((item) => item !== selectedProduct);
+                                            });
+                                            append({
+                                                amount: 0,
+                                                price: 0.00,
+                                                product: selectedProduct
+                                            });
 
-                        <Grid item xs={6}>
-                            <TextField fullWidth label="Data" id="date" />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <FormControl fullWidth>
-                                <InputLabel id="supplier">Fornecedor</InputLabel>
-                                <Select
-                                    labelId="supplier"
-                                    id="supplier-select"
-                                    label="Fornecedor"
+                                            setSelectedProduct(null);
+                                        }
+                                    }}
                                 >
-                                    <MenuItem value={10}>Lar</MenuItem>
-                                    <MenuItem value={20}>Granja Verde</MenuItem>
-                                    <MenuItem value={30}>Eletrolux</MenuItem>
-                                </Select>
-                            </FormControl>
+                                    Adicionar
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sx={{ mb: 2 }}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow sx={{ fontWeight: "bold" }}>
+                                            <TableCell>Código</TableCell>
+                                            <TableCell>Produto</TableCell>
+                                            <TableCell>Quantidade</TableCell>
+                                            <TableCell>Preço</TableCell>
+                                            <TableCell>Preço Venda</TableCell>
+                                            <TableCell>Total</TableCell>
+                                            <TableCell>Remover</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {fields.map((field, index) => {
+                                            return (
+                                                <TableRow key={field.id}>
+                                                    <TableCell>{field.product.id}</TableCell>
+                                                    <TableCell>{field.product.name}</TableCell>
+                                                    <TableCell>
+                                                        <Controller
+                                                            defaultValue={""}
+                                                            name={`items.${index}.amount`}
+                                                            control={control}
+                                                            render={({ field: controlField }) => (
+                                                                <TextField
+                                                                    {...controlField}
+                                                                    fullWidth
+                                                                    type="number"
+                                                                    label="Quantidade"
+                                                                />)
+                                                            }
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Controller
+                                                            defaultValue={""}
+                                                            name={`items.${index}.price`}
+                                                            control={control}
+                                                            render={({ field: controlField }) => (
+                                                                <TextField
+                                                                    type="number"
+                                                                    {...controlField}
+                                                                    fullWidth
+                                                                    label="Preço"
+                                                                />)
+                                                            }
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{`R$ ${calculateSalePrice(itemsValues[index])}`}</TableCell>
+                                                    <TableCell>{`R$ ${calculateItemTotal(itemsValues[index])}`}</TableCell>
+                                                    <TableCell>
+                                                        <IconButton onClick={() => {
+                                                            setProducts(old => {
+                                                                old.push(field.product);
+                                                                return old;
+                                                            })
+                                                            remove(index)
+                                                        }}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <DataDisplay label="Valor Total" value={`R$ ${calculateTotal(itemsValues)}`} />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Grid item xs={6}>
+                                    <Controller
+                                        defaultValue={""}
+                                        name="discount"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <TextField
+                                                {...field}
+                                                fullWidth
+                                                type="number"
+                                                label="Desconto(%)"
+                                            />)
+                                        }
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <DataDisplay label="Valor Líquido" value={`R$ ${calculateLiquidTotal(itemsValues, discountValue)}`} />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={4}>
-                            <FormControl fullWidth>
-                                <InputLabel id="payment">Produto</InputLabel>
-                                <Select
-                                    labelId="payment"
-                                    id="payment-select"
-                                    label="Forma de Pagamento"
-                                >
-                                    <MenuItem value={10}>Cartão</MenuItem>
-                                    <MenuItem value={20}>Dinheiro</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={6} sx={{ display: "flex" }}>
-                            <Button color="success" variant="contained">Adicionar</Button>
-                        </Grid>
-                        <Grid item xs={12} sx={{ mb: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={{ fontWeight: "bold" }}>
-                                        <TableCell>Código</TableCell>
-                                        <TableCell>Produto</TableCell>
-                                        <TableCell>Quantidade</TableCell>
-                                        <TableCell>Preço</TableCell>
-                                        <TableCell>Preço Venda</TableCell>
-                                        <TableCell>Total</TableCell>
-                                        <TableCell>Remover</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell>2</TableCell>
-                                        <TableCell>Macarrão</TableCell>
-                                        <TableCell>
-                                            <TextField label="Quantidade" id="qtd" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField label="Preço" id="price" />
-                                        </TableCell>
-                                        <TableCell>R$ 23,32</TableCell>
-                                        <TableCell>R$ 98,32</TableCell>
-                                        <TableCell>
-                                            <IconButton>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>5</TableCell>
-                                        <TableCell>Fogão</TableCell>
-                                        <TableCell>
-                                            <TextField label="Quantidade" id="qtd" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField label="Preço" id="price" />
-                                        </TableCell>
-                                        <TableCell>R$ 23,32</TableCell>
-                                        <TableCell>R$ 98,32</TableCell>
-                                        <TableCell>
-                                            <IconButton>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>7</TableCell>
-                                        <TableCell>Geladeira</TableCell>
-                                        <TableCell>
-                                            <TextField label="Quantidade" id="qtd" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField label="Preço" id="price" />
-                                        </TableCell>
-                                        <TableCell>R$ 23,32</TableCell>
-                                        <TableCell>R$ 98,32</TableCell>
-                                        <TableCell>
-                                            <IconButton>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </Grid>
-                        <Grid item xs={4}>
-                            <DataDisplay label="Valor Total" value="R$ 134,34" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField label="Valor Desconto" id="discount" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <DataDisplay label="Valor Líquido" value="R$ 134,34" />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
-                    <Button variant="contained" onClick={() => setCreateDialogOpen(false)}>Cadastrar</Button>
-                </DialogActions>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            updateProducts();
+                            reset(defaultValues);
+                            setCreateDialogOpen(false);
+                        }}>
+                            Cancelar
+                        </Button>
+                        <Button variant="contained" type="submit">Cadastrar</Button>
+                    </DialogActions>
+                </form>
             </Dialog>
         </Navigation>
     );

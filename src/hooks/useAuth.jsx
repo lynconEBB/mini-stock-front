@@ -18,14 +18,10 @@ export const useAuth = () => {
 };
 
 function useProvideAuth() {
-    const [user, setUser] = useState(null);
-
     const signin = (username, password) => {
         return api.post("/user/authenticate", {username, password})
             .then( ({ data }) => {
                 localStorage.setItem("jwt", data.token);
-                const decoded = jwt_decode(data.token)
-                setUser(decoded);
                 return true;
             })
             .catch(error => {
@@ -36,15 +32,19 @@ function useProvideAuth() {
 
     const signout = () => {
         localStorage.removeItem("jwt");
-        setUser(null);
     };
 
     const isAuthenticated = () => {
-        return localStorage.getItem("jwt") !== undefined;
+        return localStorage.getItem("jwt") !== null;
+    }
+
+    const getUser = () => {
+        return jwt_decode(localStorage.getItem("jwt"));
     }
 
     return {
-        user,
+        isAuthenticated,
+        getUser,
         signin,
         signout,
     };

@@ -1,110 +1,286 @@
-import React, {useState} from "react";
-import { Divider, IconButton, Typography, Button, Dialog, DialogContent, DialogActions,DialogTitle, Grid, TextField, Select, MenuItem, FormControl, InputLabel, Table,TableHead, TableBody, TableCell, TableRow } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
+import { Divider, IconButton, Typography, Button, Dialog, DialogContent, DialogActions, DialogTitle, Grid, TextField, Select, MenuItem, FormControl, InputLabel, Table, TableHead, TableBody, TableCell, TableRow } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit.js";
-import VisibilityIcon from "@mui/icons-material/Visibility.js";
 import Navigation from "../../layouts/Navigation/index.jsx";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack } from "@mui/system";
+import { useForm, Controller } from "react-hook-form";
+import { useApi } from "../../services/api.js";
+import MessageContext from "../../contexts/messageContext.jsx";
+
+const defaultValues = {
+  name: "",
+  phone: "",
+  document: "",
+  address: {
+    state: "",
+    city: "",
+    neighborhood: "",
+    number: "",
+    city: ""
+  }
+}
+
 
 const Customers = () => {
 
-    const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const { showMessage } = useContext(MessageContext);
+  const { authApi } = useApi();
+  const { handleSubmit, reset, setValue, control, register } = useForm({ defaultValues });
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
 
-    const rows = [
-        { id: 1, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 2, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 3, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 4, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 5, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 6, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-        { id: 7, name: 'Ronaldo LTDA', document: "324.543.654/65-5465", address: "Rua Andradina, 324", phone: "(45) 3424-5434" },
-    ];
 
-    const columns = [
-        { field: 'name', headerName: 'Nome', flex: 2 },
-        { field: "document", headerName: "Documento", flex: 1 },
-        { field: "address", headerName: "Endereço", flex: 1 },
-        { field: "phone", headerName: "Telefone", flex: 1 },
-        {
-            field: "actions",
-            headerName: "Ações",
-            renderCell: ({ row }) => {
-                return (
-                    <>
-                        <IconButton onClick={() => console.log("OlaMundo")}>
-                            <DeleteIcon />
-                        </IconButton>
-                        <IconButton onClick={() => setCreateDialogOpen(true)}>
-                            <EditIcon />
-                        </IconButton>
-                    </>
-                );
-            }
-        }
-    ];
+  const updateCustomers = () => {
+    authApi.get("/customer")
+      .then(response => {
+        setCustomers(response.data);
+      })
+      .catch(error => {
+        showMessage("Nao foi possivel carregar os clientes", "error");
+      })
+  }
 
-    return (
-        <Navigation>
-            <Stack direction="row">
-                <Typography variant="h4" sx={{ display: "inline", mr: 2 }}>Clientes</Typography>
-                <Button variant="contained" size="small" color="success" startIcon={<AddIcon />} onClick={() => setCreateDialogOpen(true)}>Cadastrar</Button>
-            </Stack>
-            <Divider sx={{ my: 2 }} />
-            <DataGrid
-                rows={rows}
-                columns={columns}
-                getRowId={row => row.id}
-                autoHeight={true}
-            />
-            <Dialog
-                open={createDialogOpen}
-                fullWidth={true}
-                maxWidth="lg"
-                onClose={() => setCreateDialogOpen(false)}
-                scroll="paper"
-            >
-                <DialogTitle>Cadastro de Cliente</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Nome" id="name" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Documento" id="document" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Telefone" id="phone" />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Typography variant="h5">Endereço</Typography>
-                            <Divider/>
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Rua" id="street" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Número" id="number" />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField fullWidth label="Bairro" id="neighborhood" />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField fullWidth label="Cidade" id="city" />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField fullWidth label="Estado" id="state" />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
-                    <Button variant="contained" onClick={() => setCreateDialogOpen(false)}>Confirmar</Button>
-                </DialogActions>
-            </Dialog>
-        </Navigation>
-    );
+  useEffect(updateCustomers, []);
+
+  const columns = [
+    { field: 'name', headerName: 'Nome', flex: 1.5 },
+    { field: "document", headerName: "Documento", flex: 1 },
+    {
+      field: "address",
+      headerName: "Endereço",
+      flex: 1,
+      renderCell: ({ row: { address } }) => {
+        return `${address.street}, ${address.number}, ${address.neighborhood} - ${address.city}, ${address.state}`
+      }
+    },
+    { field: "phone", headerName: "Telefone", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Ações",
+      renderCell: ({ row }) => {
+        return (
+          <>
+            <IconButton onClick={() => {
+
+              authApi.delete(`/customer/${row.id}`)
+                .then(response => {
+                  showMessage("Cliente excluido com sucesso!");
+                  updateCustomers();
+                })
+                .catch(error => {
+                  showMessage("Nao foi excluir este cliente!", "error");
+                })
+            }}>
+              <DeleteIcon />
+            </IconButton>
+            <IconButton onClick={() => {
+              setSelectedId(row.id);
+              setCreateDialogOpen(true);
+              for (let key in row) {
+                setValue(key, row[key]);
+              }
+            }}>
+              <EditIcon />
+            </IconButton>
+          </>
+        );
+      }
+    }
+  ];
+
+  const onSubmit = data => {
+    if (selectedId !== null) {
+      authApi.put(`/customer/${selectedId}`, data)
+        .then(response => {
+          updateCustomers();
+          setCreateDialogOpen(false);
+          reset(defaultValues);
+          showMessage("Cliente atualizado com sucesso", "success");
+        })
+        .catch(error => {
+          showMessage("Dados inválidos", "error");
+        });
+    } else {
+      authApi.post("/customer", data)
+        .then(response => {
+          updateCustomers();
+          setCreateDialogOpen(false);
+          reset(defaultValues);
+          showMessage("Cliente cadastrado com sucesso", "success");
+        })
+        .catch(error => {
+          showMessage("Dados inválidos", "error");
+        });
+    }
+  }
+
+  return (
+    <Navigation>
+
+      <Stack direction="row">
+        <Typography variant="h4" sx={{ display: "inline", mr: 2 }}>Clientes</Typography>
+        <Button variant="contained" size="small" color="success" startIcon={<AddIcon />} onClick={() => setCreateDialogOpen(true)}>Cadastrar</Button>
+      </Stack>
+      <Divider sx={{ my: 2 }} />
+      <DataGrid
+        rows={customers}
+        columns={columns}
+        getRowId={row => row.id}
+        autoHeight={true}
+      />
+
+      <Dialog
+        open={createDialogOpen}
+        fullWidth={true}
+        maxWidth="lg"
+        onClose={() => setCreateDialogOpen(false)}
+        scroll="paper"
+      >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogTitle>Cadastro de Cliente</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Nome"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="document"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Documento"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Telefone"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h5">Endereço</Typography>
+                <Divider />
+              </Grid>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="address.street"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Rua"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="address.number"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Número"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Controller
+                  defaultValue={""}
+                  name="address.neighborhood"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Bairro"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Controller
+                  defaultValue={""}
+                  name="address.city"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Cidade"
+                    />)
+                  }
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Controller
+                  defaultValue={""}
+                  name="address.state"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="Estado"
+                    />)
+                  }
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setSelectedId(null);
+                setCreateDialogOpen(false);
+                reset(defaultValues);
+              }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="contained"
+              type="submit">
+              Confirmar
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+    </Navigation>
+  );
 }
 export default Customers;

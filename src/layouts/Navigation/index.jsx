@@ -25,7 +25,7 @@ const Navigation = ({children}) => {
 
     const navigate = useNavigate();
 
-    const {signout} = useAuth();
+    const {signout, getUser} = useAuth();
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -34,9 +34,14 @@ const Navigation = ({children}) => {
                     <Typography variant="h6" noWrap component="div">
                         Mini Stock
                     </Typography>
-                    <IconButton sx={{color:"white"}} onClick={signout}>
-                        <ExitToAppIcon/>
-                    </IconButton>
+                    <Box sx={{display: "flex", justifyContent:"center", alignItems:"center"}}>
+                        <Typography variant="h6" noWrap component="div" sx={{fontWeight:"bold"}}>
+                           {getUser().sub} 
+                        </Typography>
+                        <IconButton sx={{color:"white"}} onClick={() => {signout(); navigate("/login");}}>
+                            <ExitToAppIcon/>
+                        </IconButton>
+                    </Box>
                 </Toolbar>
             </AppBar>
             <Drawer
@@ -92,6 +97,14 @@ const Navigation = ({children}) => {
                                     <ApartmentIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Fornecedores"} />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem key={6} disablePadding>
+                            <ListItemButton onClick={() => navigate("/types")}>
+                                <ListItemIcon>
+                                    <ApartmentIcon/>
+                                </ListItemIcon>
+                                <ListItemText primary={"Tipos"} />
                             </ListItemButton>
                         </ListItem>
                     </List>

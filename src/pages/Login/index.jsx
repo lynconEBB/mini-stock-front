@@ -13,7 +13,7 @@ const Login = () => {
 
     const navigate = useNavigate();
 
-    const { user, signin, signout } = useAuth();
+    const { signin } = useAuth();
 
     const [loginData, setLoginData] = useState({
         user: "",

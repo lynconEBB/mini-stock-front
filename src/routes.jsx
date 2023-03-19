@@ -9,6 +9,7 @@ import Customers from "./pages/Customers"
 import Sales from './pages/Sales';
 import Purchases from './pages/Purchases';
 import PrivateRoutes from './components/PrivateRoutes';
+import Types from "./pages/Type/index.jsx";
 
 const Routes = () => {
     return (
@@ -20,6 +21,7 @@ const Routes = () => {
                     <Route path="/customers" element={<Customers />} />
                     <Route path="/sales" element={<Sales />} />
                     <Route path="/purchases" element={<Purchases />} />
+                    <Route path="/types" element={<Types />}/>
                 </Route>
                 <Route index element={<Login />} />
                 <Route element={<Login />} path="/login" />
