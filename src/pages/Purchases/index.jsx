@@ -4,7 +4,6 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     Divider,
     FormControl,
@@ -16,7 +15,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     TextField,
@@ -52,7 +50,7 @@ const calculateSalePrice = (itemValue) => {
     if (itemValue === undefined || itemValue.price === "" || Number.isNaN(itemValue.price))
         return "R$ 0.00";
 
-    return (parseFloat(itemValue.price) + (parseFloat(itemValue.price) * 0.15)).toFixed(2);
+    return Number((parseFloat(itemValue.price) + (parseFloat(itemValue.price) * 0.15)).toFixed(2));
 }
 
 const calculateTotal = (items) => {
@@ -61,7 +59,7 @@ const calculateTotal = (items) => {
     for (const item of items) {
         total += calculateItemTotal(item);
     }
-    return parseFloat(total).toFixed(2);
+    return Number(parseFloat(total).toFixed(2));
 }
 
 const calculateLiquidTotal = (items, discount) => {
@@ -71,7 +69,7 @@ const calculateLiquidTotal = (items, discount) => {
         return total;
 
     const discountValue = total * parseFloat(discount) / 100.00;
-    return (total - discountValue).toFixed(2);
+    return Number((total - discountValue).toFixed(2));
 }
 
 const Purchases = () => {
@@ -83,6 +81,7 @@ const Purchases = () => {
     const [products, setProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedPurchase, setSelectedPurchase] = useState(null);
 
     const { control, reset, handleSubmit } = useForm({
         defaultValues: {
@@ -140,16 +139,42 @@ const Purchases = () => {
     const columns = [
         { field: 'id', headerName: "Número" },
         { field: "date", headerName: "Data", flex: 1 },
-        { field: 'supplier', headerName: "Fornecedor", flex: 2 },
-        { field: "value", headerName: "Total", flex: 1 },
-        { field: "finalValue", headerName: "Valor Líquido", flex: 1 },
+        {
+            field: 'supplier',
+            headerName: "Fornecedor",
+            flex: 2,
+            renderCell: ({ row }) => {
+                return <p>{row.supplier.name}</p>
+            }
+        },
+        {
+            field: "total",
+            headerName: "Total",
+            flex: 1,
+            renderCell: ({ row }) => {
+                return <p>R$ {Number(row.total).toFixed(2)}</p>
+            }
+        },
+        {
+            field: "liquidPrice",
+            headerName: "Valor Líquido",
+            flex: 1,
+            renderCell: ({ row }) => {
+                return <p>R$ {Number(row.liquidPrice).toFixed(2)}</p>
+            }
+        },
         {
             field: "actions",
             headerName: "Ações",
             renderCell: ({ row }) => {
                 return (
                     <>
-                        <IconButton onClick={() => setDetailsDialogOpen(true)}>
+                        <IconButton
+                            onClick={() => {
+                                setSelectedPurchase(row);
+                                setDetailsDialogOpen(true);
+                            }}
+                        >
                             <VisibilityIcon />
                         </IconButton>
                     </>
@@ -159,7 +184,9 @@ const Purchases = () => {
     ];
 
     const onSubmit = data => {
-        console.log(data);
+        for (const item of data.items) {
+            item.productId = item.product.id;
+        }
         authApi.post("/purchase", data)
             .then(response => {
                 updatePurchases();
@@ -190,29 +217,32 @@ const Purchases = () => {
                 open={detailsDialogOpen}
                 fullWidth={true}
                 maxWidth="lg"
-                onClose={() => setDetailsDialogOpen(false)}
+                onClose={() => {
+                    setSelectedPurchase(null);
+                    setDetailsDialogOpen(false);
+                }}
                 scroll="paper"
             >
                 <DialogTitle>Detalhes da Compra</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2}>
                         <Grid item xs={4}>
-                            <DataDisplay label="Número" value="4532" />
+                            <DataDisplay label="Número" value={selectedPurchase?.id} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Data" value="12/09/2003" />
+                            <DataDisplay label="Data" value={selectedPurchase?.date} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Fornecedor" value="Lar" />
+                            <DataDisplay label="Fornecedor" value={selectedPurchase?.supplier.name} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Valor Total" value="R$ 134,34" />
+                            <DataDisplay label="Valor Total" value={`R$ ${Number(selectedPurchase?.total).toFixed(2)}`} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Desconto Total" value="R$ 134,34" />
+                            <DataDisplay label="Desconto Total" value={`${selectedPurchase?.discount} %`} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Valor Líquido" value="R$ 134,34" />
+                            <DataDisplay label="Valor Líquido" value={`R$ ${Number(selectedPurchase?.liquidPrice).toFixed(2)}`} />
                         </Grid>
                         <Grid item xs={12}>
                             <Table>
@@ -226,34 +256,28 @@ const Purchases = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell>2</TableCell>
-                                        <TableCell>Macarrão</TableCell>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>R$ 32,54</TableCell>
-                                        <TableCell>RS$ 98,32</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>5</TableCell>
-                                        <TableCell>Fogão</TableCell>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>R$ 32,54</TableCell>
-                                        <TableCell>RS$ 98,32</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>7</TableCell>
-                                        <TableCell>Geladeira</TableCell>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>R$ 32,54</TableCell>
-                                        <TableCell>RS$ 98,32</TableCell>
-                                    </TableRow>
+                                    {selectedPurchase?.items.map((item) => (
+                                        <TableRow key={item.idProductId}>
+                                            <TableCell>{item.idProductId}</TableCell>
+                                            <TableCell>{item.idProductName}</TableCell>
+                                            <TableCell>{item.amount}</TableCell>
+                                            <TableCell>{`R$ ${Number(item.price).toFixed(2)}`}</TableCell>
+                                            <TableCell>{`R$ ${Number(item.total).toFixed(2)}`}</TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDetailsDialogOpen(false)}>Fechar</Button>
+                    <Button onClick={() => {
+                        setSelectedPurchase(null);
+                        setDetailsDialogOpen(false);
+                    }}
+                    >
+                        Fechar
+                    </Button>
                 </DialogActions>
             </Dialog>
 
@@ -290,6 +314,7 @@ const Purchases = () => {
                                 <FormControl fullWidth>
                                     <InputLabel id="supplier">Fornecedor</InputLabel>
                                     <Controller
+                                        defaultValue={null}
                                         name="supplierId"
                                         control={control}
                                         render={({ field }) => (

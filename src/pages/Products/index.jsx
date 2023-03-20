@@ -161,6 +161,7 @@ const Products = () => {
                     showMessage("Dados inválidos", "error");
                 });
         }
+        setSelectedId(null);
     }
 
 

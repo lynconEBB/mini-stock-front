@@ -19,7 +19,7 @@ const defaultValues = {
     city: "",
     neighborhood: "",
     number: "",
-    city: ""
+    street: ""
   }
 }
 
@@ -28,7 +28,7 @@ const Customers = () => {
 
   const { showMessage } = useContext(MessageContext);
   const { authApi } = useApi();
-  const { handleSubmit, reset, setValue, control, register } = useForm({ defaultValues });
+  const { handleSubmit, reset, setValue, control } = useForm({ defaultValues });
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -116,6 +116,7 @@ const Customers = () => {
           showMessage("Dados inválidos", "error");
         });
     }
+    setSelectedId(null);
   }
 
   return (
@@ -141,7 +142,7 @@ const Customers = () => {
         scroll="paper"
       >
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogTitle>Cadastro de Cliente</DialogTitle>
+          <DialogTitle>{(selectedId !== null) ? "Edição" : "Cadastro"} de Cliente</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={4}>
