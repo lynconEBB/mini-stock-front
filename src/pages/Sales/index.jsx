@@ -42,7 +42,7 @@ const calculateItemTotal = (itemValue) => {
     if (itemValue === undefined || Number.isNaN(itemValue.amount) || Number.isNaN(itemValue.price))
         return "R$ 0.00";
 
-    return Number((itemValue.amount * itemValue.product.salePrice).toFixed(2));
+    return Number(itemValue.amount * itemValue.product.salePrice);
 }
 
 const calculateTotal = (items) => {
@@ -51,7 +51,7 @@ const calculateTotal = (items) => {
     for (const item of items) {
         total += calculateItemTotal(item);
     }
-    return Number(parseFloat(total).toFixed(2));
+    return parseFloat(total);
 }
 
 const calculateLiquidTotal = (items, discount) => {
@@ -61,7 +61,7 @@ const calculateLiquidTotal = (items, discount) => {
         return total;
 
     const discountValue = total * parseFloat(discount) / 100.00;
-    return Number((total - discountValue).toFixed(2));
+    return Number(total - discountValue);
 }
 
 const Purchases = () => {
@@ -99,10 +99,11 @@ const Purchases = () => {
     const updateSales = () => {
         authApi.get("/sale")
             .then(response => {
+                console.log(response);
                 setSales(response.data);
             })
             .catch(error => {
-                showMessage("Nao foi possivel carregar as compras!", "error");
+                showMessage("Nao foi possivel carregar as vendas!", "error");
             });
     }
 
@@ -133,18 +134,10 @@ const Purchases = () => {
         { field: "date", headerName: "Data", flex: 1 },
         {
             field: 'customer',
-            headerName: "Fornecedor",
+            headerName: "Cliente",
             flex: 2,
             renderCell: ({ row }) => {
-                return <p>{row.supplier.name}</p>
-            }
-        },
-        {
-            field: "total",
-            headerName: "Total",
-            flex: 1,
-            renderCell: ({ row }) => {
-                return <p>R$ {Number(row.total).toFixed(2)}</p>
+                return <p>{row.customer.name}</p>
             }
         },
         {
@@ -153,6 +146,14 @@ const Purchases = () => {
             flex: 1,
             renderCell: ({ row }) => {
                 return <p>{(row.paymentMethod === "CREDIT_CARD") ? "Cartão de Creédito" : "Dinheiro" }</p>
+            }
+        },
+        {
+            field: "total",
+            headerName: "Total",
+            flex: 1,
+            renderCell: ({ row }) => {
+                return <p>R$ {Number(row.total).toFixed(2)}</p>
             }
         },
         {
@@ -184,7 +185,7 @@ const Purchases = () => {
                 updateSales();
                 setCreateDialogOpen(false);
                 reset(defaultValues);
-                showMessage("Compra cadastrado com sucesso", "success");
+                showMessage("Venda cadastrado com sucesso", "success");
             })
             .catch(error => {
                 showMessage("Dados inválidos", "error");
@@ -215,7 +216,7 @@ const Purchases = () => {
                 }}
                 scroll="paper"
             >
-                <DialogTitle>Detalhes da Compra</DialogTitle>
+                <DialogTitle>Detalhes da Venda</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2}>
                         <Grid item xs={4}>
@@ -225,7 +226,7 @@ const Purchases = () => {
                             <DataDisplay label="Data" value={selectedSale?.date} />
                         </Grid>
                         <Grid item xs={4}>
-                            <DataDisplay label="Fornecedor" value={selectedSale?.supplier.name} />
+                            <DataDisplay label="Cliente" value={selectedSale?.customer.name} />
                         </Grid>
                         <Grid item xs={4}>
                             <DataDisplay label="Valor Total" value={`R$ ${Number(selectedSale?.total).toFixed(2)}`} />
@@ -448,7 +449,7 @@ const Purchases = () => {
                                 </Table>
                             </Grid>
                             <Grid item xs={4}>
-                                <DataDisplay label="Valor Total" value={`R$ ${calculateTotal(itemsValues)}`} />
+                                <DataDisplay label="Valor Total" value={`R$ ${calculateTotal(itemsValues).toFixed(2)}`} />
                             </Grid>
                             <Grid item xs={4}>
                                 <Grid item xs={6}>
@@ -468,8 +469,7 @@ const Purchases = () => {
                                 </Grid>
                             </Grid>
                             <Grid item xs={4}>
-                                <DataDisplay label="Valor Líquido" value={`R$ ${calculateLiquidTotal(itemsValues, discountValue)}`} />
-                            </Grid>
+                                <DataDisplay label="Valor Líquido" value={`R$ ${calculateLiquidTotal(itemsValues, discountValue).toFixed(2)}`} /> </Grid>
                         </Grid>
                     </DialogContent>
                     <DialogActions>

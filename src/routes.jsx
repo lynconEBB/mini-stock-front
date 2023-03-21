@@ -15,13 +15,17 @@ const Routes = () => {
     return (
         <BrowserRouter>
             <RoutesSwitch>
-                <Route element={<PrivateRoutes roles={"ADMIN"}/>}>
-                    <Route path="/products" element={<Products />} />
+                <Route element={<PrivateRoutes roles={["ADMIN"]}/>}>
                     <Route path="/suppliers" element={<Suppliers />} />
                     <Route path="/customers" element={<Customers />} />
-                    <Route path="/sales" element={<Sales />} />
-                    <Route path="/purchases" element={<Purchases />} />
                     <Route path="/types" element={<Types />}/>
+                </Route>
+                <Route element={<PrivateRoutes roles={["SELLER"]}/>}>
+                    <Route path="/sales" element={<Sales />} />
+                </Route>
+                <Route element={<PrivateRoutes roles={["STOCK_MANAGER"]}/>}>
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/purchases" element={<Purchases />} />
                 </Route>
                 <Route index element={<Login />} />
                 <Route element={<Login />} path="/login" />

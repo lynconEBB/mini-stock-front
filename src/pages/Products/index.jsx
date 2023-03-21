@@ -97,7 +97,7 @@ const Products = () => {
             headerName: "Preço Compra",
             flex: 1,
             renderCell: ({row}) => {
-                return (row.purchasePrice !== null) ? "R$ " + row.purchasePrice : "Não cadastrado"
+                return (row.purchasePrice !== null) ? "R$ " + Number(row.purchasePrice).toFixed(2) : "Não cadastrado"
             }
         },
         {
@@ -105,7 +105,7 @@ const Products = () => {
             headerName: "Preço Venda",
             flex: 1,
             renderCell: ({row}) => {
-                return (row.salePrice !== null) ? "R$ " + row.salePrice : "Não cadastrado"
+                return (row.salePrice !== null) ? "R$ " + Number(row.salePrice).toFixed(2) : "Não cadastrado"
             }
         },
         {

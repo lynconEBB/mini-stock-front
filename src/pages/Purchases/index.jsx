@@ -43,14 +43,14 @@ const calculateItemTotal = (itemValue) => {
     if (itemValue === undefined || Number.isNaN(itemValue.amount) || Number.isNaN(itemValue.price))
         return "R$ 0.00";
 
-    return Number((itemValue.amount * itemValue.price).toFixed(2));
+    return Number((itemValue.amount * itemValue.price));
 }
 
 const calculateSalePrice = (itemValue) => {
     if (itemValue === undefined || itemValue.price === "" || Number.isNaN(itemValue.price))
         return "R$ 0.00";
 
-    return Number((parseFloat(itemValue.price) + (parseFloat(itemValue.price) * 0.15)).toFixed(2));
+    return Number((parseFloat(itemValue.price) + (parseFloat(itemValue.price) * 0.15)));
 }
 
 const calculateTotal = (items) => {
@@ -59,7 +59,7 @@ const calculateTotal = (items) => {
     for (const item of items) {
         total += calculateItemTotal(item);
     }
-    return Number(parseFloat(total).toFixed(2));
+    return Number(parseFloat(total));
 }
 
 const calculateLiquidTotal = (items, discount) => {
@@ -69,7 +69,7 @@ const calculateLiquidTotal = (items, discount) => {
         return total;
 
     const discountValue = total * parseFloat(discount) / 100.00;
-    return Number((total - discountValue).toFixed(2));
+    return Number((total - discountValue));
 }
 
 const Purchases = () => {
@@ -426,8 +426,8 @@ const Purchases = () => {
                                                             }
                                                         />
                                                     </TableCell>
-                                                    <TableCell>{`R$ ${calculateSalePrice(itemsValues[index])}`}</TableCell>
-                                                    <TableCell>{`R$ ${calculateItemTotal(itemsValues[index])}`}</TableCell>
+                                                    <TableCell>{`R$ ${Number(calculateSalePrice(itemsValues[index])).toFixed(2)}`}</TableCell>
+                                                    <TableCell>{`R$ ${Number(calculateItemTotal(itemsValues[index])).toFixed(2)}`}</TableCell>
                                                     <TableCell>
                                                         <IconButton onClick={() => {
                                                             setProducts(old => {
@@ -446,7 +446,7 @@ const Purchases = () => {
                                 </Table>
                             </Grid>
                             <Grid item xs={4}>
-                                <DataDisplay label="Valor Total" value={`R$ ${calculateTotal(itemsValues)}`} />
+                                <DataDisplay label="Valor Total" value={`R$ ${Number(calculateTotal(itemsValues)).toFixed(2)}`} />
                             </Grid>
                             <Grid item xs={4}>
                                 <Grid item xs={6}>
@@ -466,7 +466,7 @@ const Purchases = () => {
                                 </Grid>
                             </Grid>
                             <Grid item xs={4}>
-                                <DataDisplay label="Valor Líquido" value={`R$ ${calculateLiquidTotal(itemsValues, discountValue)}`} />
+                                <DataDisplay label="Valor Líquido" value={`R$ ${Number(calculateLiquidTotal(itemsValues, discountValue)).toFixed(2)}`} />
                             </Grid>
                         </Grid>
                     </DialogContent>

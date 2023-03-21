@@ -26,6 +26,7 @@ const Navigation = ({children}) => {
     const navigate = useNavigate();
 
     const {signout, getUser} = useAuth();
+    console.log(getUser().role === "ADMIN");;
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -59,54 +60,54 @@ const Navigation = ({children}) => {
                 <Toolbar />
                 <Box sx={{ overflow: 'auto' }}>
                     <List>
-                        <ListItem key={1} disablePadding>
+                       {getUser().role === "STOCK_MANAGER" && <ListItem key={1} disablePadding>
                             <ListItemButton onClick={() => navigate("/products")}>
                                 <ListItemIcon>
                                     <ShoppingCartIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Produtos"} />
                             </ListItemButton>
-                        </ListItem>
-                        <ListItem key={2} disablePadding>
+                        </ListItem> }
+                        {getUser().role === "SELLER" && <ListItem key={2} disablePadding>
                             <ListItemButton onClick={() => navigate("/sales")}>
                                 <ListItemIcon>
                                     <PointOfSaleIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Vendas"} />
                             </ListItemButton>
-                        </ListItem>
-                        <ListItem key={3} disablePadding>
+                        </ListItem> }
+                        {getUser().role === "STOCK_MANAGER" && <ListItem key={3} disablePadding>
                             <ListItemButton onClick={() => navigate("/purchases")}>
                                 <ListItemIcon>
                                     <ShoppingBasketIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Compras"} />
                             </ListItemButton>
-                        </ListItem>
-                        <ListItem key={4} disablePadding>
+                        </ListItem> }
+                        {getUser().role === "ADMIN" && <ListItem key={4} disablePadding>
                             <ListItemButton onClick={() => navigate("/customers")}>
                                 <ListItemIcon>
                                     <PersonIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Clientes"} />
                             </ListItemButton>
-                        </ListItem>
-                        <ListItem key={5} disablePadding>
+                        </ListItem> }
+                        {getUser().role === "ADMIN" && <ListItem key={5} disablePadding>
                             <ListItemButton onClick={() => navigate("/suppliers")}>
                                 <ListItemIcon>
                                     <ApartmentIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Fornecedores"} />
                             </ListItemButton>
-                        </ListItem>
-                        <ListItem key={6} disablePadding>
+                        </ListItem>}
+                        {getUser().role === "ADMIN" && <ListItem key={6} disablePadding>
                             <ListItemButton onClick={() => navigate("/types")}>
                                 <ListItemIcon>
                                     <ApartmentIcon/>
                                 </ListItemIcon>
                                 <ListItemText primary={"Tipos"} />
                             </ListItemButton>
-                        </ListItem>
+                        </ListItem>}
                     </List>
                 </Box>
             </Drawer>

@@ -13,7 +13,7 @@ const Login = () => {
 
     const navigate = useNavigate();
 
-    const { signin } = useAuth();
+    const { signin, getUser } = useAuth();
 
     const [loginData, setLoginData] = useState({
         user: "",
@@ -26,7 +26,13 @@ const Login = () => {
         event.preventDefault();
         const success = await signin(loginData.user, loginData.password);
         if (success) {
-            navigate("/products");
+            if (getUser().role === "SELLER") {
+                navigate("/sales");
+            } else if (getUser().role === "STOCK_MANAGER") {
+                navigate("/products");
+            } else {
+                navigate("/customers")
+            }
         }
         else {
             setMessageOpen(true);
